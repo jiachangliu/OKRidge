@@ -7,9 +7,7 @@ import numpy as np
 
 from .node import Node, branch  # , presolve
 
-# from .utilities import branch, is_integral
 
-# from beamsearchregression.sparseBeamSearch import sparseLogRegModel_big_n
 from .solvers import (
     sparseLogRegModel_big_n as sparseLogRegModel_big_n_with_cache,
     total_size,

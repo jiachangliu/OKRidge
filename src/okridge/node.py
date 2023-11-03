@@ -5,14 +5,6 @@ import math
 import time
 import sys
 
-# import importlib.util
-# import sys
-# import scipy
-
-# scs_exist = importlib.util.find_spec("scs")
-# if scs_exist is not None:
-#     import scs
-#     print("import scs")
 from sklearn.isotonic import IsotonicRegression
 import scipy
 import gc
@@ -24,7 +16,6 @@ gc.enable()
 def get_RAM_used_in_GB():
     # print(psutil.virtual_memory())
     # print(psutil.virtual_memory()[0])
-    # sys.exit()
     return psutil.virtual_memory()[3] / 1000000000
 
 
@@ -719,88 +710,3 @@ def branch(current_node, k):
     )
     left_node = Node(current_node, current_node.zlb.copy(), new_zub)
     return left_node, right_node
-
-
-# def presolve(current_node, k):
-#     p = current_node.data.p
-
-#     # set up the cone
-#     cone = dict(l=2*p+1, q=[3]*p)
-
-#     # set up A and b
-#     A = np.zeros((5*p+1, 3*p))
-#     b = np.zeros((5*p+1, ))
-#     rotation_matrix = np.asarray([[-0.5, -0.5, 0.0], [-0.5, 0.5, 0.0], [0.0, 0.0, -1.0]])
-#     box_constraint_vector = np.asarray([-1.0, 1.0])
-#     rotation_start = 2*p+1
-#     for j in range(p):
-#         A[(rotation_start+3*j):(rotation_start+3*(j+1)), 3*j:3*(j+1)] = rotation_matrix
-#         A[(2*j):(2*j+2), 3*j] = box_constraint_vector
-#         A[2*p, 3*j] = 1.0
-#         b[2*j+1] = 1.0
-#     b[2*p] = k
-#     A_sparse = scipy.sparse.csc_matrix(A)
-
-#     # set up P and c
-#     P = np.zeros((3*p, 3*p))
-#     c = np.zeros((3*p, ))
-
-#     indicies = np.asarray(2 + 3 * np.arange(p), dtype=int)
-#     P[np.ix_(indicies, indicies)] = 2 * current_node.data.XTX_minus_smallest_eigenval
-#     c[indicies] = - 2 * current_node.data.XTy
-
-#     indicies = np.asarray(1 + 3 * np.arange(p), dtype=int)
-#     c[indicies] = current_node.data.lambda2_plus_smallest_eigenval
-#     P_sparse = scipy.sparse.csc_matrix(P)
-
-
-#     # Populate dicts with data to pass into SCS
-#     data = dict(P=P_sparse, A=A_sparse, b=b, c=c)
-#     # cone = dict(z=1, l=2)
-
-#     # Initialize solver
-#     solver = scs.SCS(data, cone, eps_abs=1e-6, eps_rel=1e-6, eps_infeas = 1.0e-12, verbose=True, max_iters=int(0.3e4), mkl=True)
-
-#     # Solve!
-#     if current_node.upper_beta is not None:
-#         warm_start_x = np.zeros((3*p, ))
-#         indicies = np.asarray(0 + 3 * np.arange(p), dtype=int) # z_indices
-#         warm_start_x[indicies] = np.asarray(np.abs(current_node.upper_beta) > 1e-6)
-#         indicies = np.asarray(1 + 3 * np.arange(p), dtype=int) # s_indices
-#         warm_start_x[indicies] = current_node.upper_beta ** 2
-#         indicies = np.asarray(2 + 3 * np.arange(p), dtype=int) # beta_indices
-#         warm_start_x[indicies] = current_node.upper_beta
-#         sol = solver.solve(warm_start=True, x=warm_start_x)
-#     else:
-#         sol = solver.solve()
-
-
-#     indicies = np.asarray(0 + 3 * np.arange(p), dtype=int)
-#     z = sol["x"][indicies]
-
-#     casted_z = (z + 0.5).astype(int)
-#     z_diff = z - casted_z
-#     max_ind = np.argmax(abs(z_diff))
-#     presolve_is_integral = False
-#     if abs(z_diff[max_ind]) <= 1e-5:
-#         presolve_is_integral = True
-
-#     # if presolve_is_integral:
-#     if True:
-#         z_1_masks = np.abs(z - 1) < 1e-5
-#         z_0_masks = np.abs(z) < 1e-5
-#         current_node.zlb[z_1_masks] = True
-#         current_node.zub[z_0_masks] = False
-
-#         current_node.allowed_support = np.where(current_node.zub == True)[0]
-#         print("after presolving, the allowed support is", current_node.allowed_support)
-#         # print(current_node.allowed_support)
-#         # print(current_node.zlb[current_node.allowed_support])
-#         current_node.fixed_support_on_allowed_support = np.where(current_node.zlb[current_node.allowed_support] == True)[0]
-#         # print(current_node.fixed_support_on_allowed_support)
-#         current_node.unfixed_support_on_allowed_support = np.where(current_node.zlb[current_node.allowed_support] == False)[0]
-
-#         print("We finish at presolving because all indicators z are integral!")
-#     else:
-#         print("Presolving do not give an integral solution!")
-#     return current_node
