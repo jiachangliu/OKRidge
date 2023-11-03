@@ -5,13 +5,11 @@ from collections import namedtuple
 
 import numpy as np
 
-import matplotlib.pyplot as plt
-
 from .node import Node, branch  # , presolve
 
 # from .utilities import branch, is_integral
 
-from beamsearchregression.sparseBeamSearch import sparseLogRegModel_big_n
+# from beamsearchregression.sparseBeamSearch import sparseLogRegModel_big_n
 from .solvers import (
     sparseLogRegModel_big_n as sparseLogRegModel_big_n_with_cache,
     total_size,
@@ -394,32 +392,6 @@ class BNBTree:
             print("nonzero_indices are", nonzero_indices)
             print("sub_beta is", sub_betas[loss_indices[i]])
             beta_collections[i, nonzero_indices] = sub_betas[loss_indices[i]]
-
-
-        plt.figure()
-        plt.hist(loss_collections, bins=100)
-        plt.xlabel("loss")
-        plt.ylabel("frequency")
-        plt.title("top 1000 Rashomon set solutions")
-        plt.savefig("tmp_losses.png")
-
-        plt.figure()
-        plt.step(np.arange(1000), np.sort(loss_collections))
-        plt.xlabel("loss ranking index")
-        plt.ylabel("loss")
-        plt.title("loss step plot of top 1000 Rashomon set solutions")
-        plt.savefig("tmp_losses_step.png")
-
-        plt.figure()
-        beta_collections_mean = np.mean(beta_collections, axis=0)
-        beta_collections_std = np.std(beta_collections, axis=0)
-        plt.errorbar(np.arange(self.data.p), beta_collections_mean, yerr=beta_collections_std, fmt='o')
-        plt.xlabel("feature index")
-        plt.ylabel("beta")
-        plt.title("coefficients of top 1000 Rashomon set solutions")
-        plt.savefig("tmp_losses_beta.png")
-
-        sys.exit()
 
         if not (self.bfs_queue.qsize() > 0 or self.dfs_queue.qsize() > 0):
             print("There are no nodes left in the queue")
