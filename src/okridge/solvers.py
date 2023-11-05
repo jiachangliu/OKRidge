@@ -68,12 +68,16 @@ def calculate_size(tmp_dict):
 
 class linRegModel_unnormalized_big_n:
     def __init__(self, data, intercept=True):
+        """Initialize the linear regression model
+
+        Args:
+            data (CustomClass): data containing all the necessary information
+            intercept (bool, optional): whether we include an intercept term. Defaults to True.
+        """
         self.X = data.X
-        # self.X_norm_2 = data.X_norm_2
         self.n, self.p = data.n, data.p
 
         self.y = data.y.reshape(-1).astype(float)
-        # self.XT = np.transpose(self.X)
         self.XTX_lambda2 = data.XTX_lambda2
         self.XTy = data.XTy
         self.beta0 = 0.0
@@ -85,30 +89,61 @@ class linRegModel_unnormalized_big_n:
         self.intercept = intercept
         self.lambda2 = data.lambda2
 
-        # self.half_Lipschitz = self.X_norm_2 + self.lambda2
-        # self.half_Lipschitz = self.XTX_lambda2.diagonal()
         self.half_Lipschitz = data.half_Lipschitz
         self.total_child_added = 0
     
     def warm_start_from_beta0_betas(self, beta0, betas):
+        """Warm start the model from a given beta0 and betas
+
+        Args:
+            beta0 (float): intercept term
+            betas (np.array): 1D array of coefficients
+        """
         self.beta0, self.betas = beta0, betas
         self.r = self.XTX_lambda2.dot(self.betas)
         self.total_child_added = 0
 
     def get_beta0_betas(self):
+        """Get the current beta0 and betas
+
+        Returns:
+            float: intercept term
+            np.array: 1D array of coefficients
+        """
         return self.beta0, self.betas
 
     def get_beta0_betas_r(self):
+        """Get the current beta0, betas, and r
+
+        Returns:
+            float: intercept term
+            np.array: 1D array of coefficients
+            np.array: 1D array of intermediate values - XTX_lambda2.dot(betas)
+        """
         return self.beta0, self.betas, self.r
     
     def get_betas_r_loss(self):
+        """Get the current betas, r, and loss
+
+        Returns:
+            np.array: 1D array of coefficients
+            np.array: 1D array of intermediate values - XTX_lambda2.dot(betas)
+            float: loss
+        """
         return self.betas, self.r, self.loss
         
     # @functools.cache
     def finetune_on_current_support(self, supp_mask):
-        # betas_on_supp = np.linalg.solve(self.XTX_lambda2[supp_mask][:, supp_mask], self.XTy[supp_mask])
-        # r = betas_on_supp.dot(self.XTX_lambda2[supp_mask])
-        # loss = r[supp_mask].dot(betas_on_supp) - 2 * self.XTy[supp_mask].dot(betas_on_supp)
+        """Finetune the current solution on a given support
+
+        Args:
+            supp_mask (np.array): 1D array of boolean values indicating the support
+
+        Returns:
+            np.array: 1D array of coefficients on the support
+            np.array: 1D array of intermediate values - XTX_lambda2.dot(betas)
+            float: loss
+        """
 
         XTX_lambda2_supp_mask = self.XTX_lambda2[supp_mask]
         XTy_supp_mask = self.XTy[supp_mask]
@@ -121,6 +156,16 @@ class linRegModel_unnormalized_big_n:
 
 class sparseLogRegModel_big_n(linRegModel_unnormalized_big_n):
     def __init__(self, data, intercept=True, parent_size=10, child_size=10, allowed_supp_mask=None, max_memory_GB=50):
+        """Initialize the sparse logistic regression model
+
+        Args:
+            data (CustomClass): data containing all the necessary information
+            intercept (bool, optional): whether we include an intercept term. Defaults to True.
+            parent_size (int, optional): number of solutions to keep after doing beam search so that these can be used as parent solutions for the next stage of support expansion. Defaults to 10.
+            child_size (int, optional): number of solutions to explore for each parent solution during beam search. Defaults to 10.
+            allowed_supp_mask (np.array, optional): 1D of boolean values indicating which features are allowed to use. Defaults to None.
+            max_memory_GB (int, optional): maximum memory (in GB) to use. Defaults to 50.
+        """
         super().__init__(data=data, intercept=intercept)
         
         self.parent_size = parent_size
@@ -151,6 +196,12 @@ class sparseLogRegModel_big_n(linRegModel_unnormalized_big_n):
         print("max number of saved solutions is", self.max_saved_solutions)
 
     def reset_fixed_supp_and_allowed_supp(self, fixed_supp_mask, allowed_supp_mask):
+        """Reset the fixed support and allowed support
+
+        Args:
+            fixed_supp_mask (np.array): 1D array of boolean values indicating the fixed support
+            allowed_supp_mask (np.array): 1D array of boolean values indicating the allowed support
+        """
         self.fixed_supp_mask = fixed_supp_mask
         self.allowed_supp_mask = allowed_supp_mask
         self.betas.fill(0)
@@ -162,12 +213,10 @@ class sparseLogRegModel_big_n(linRegModel_unnormalized_big_n):
         self.betas[fixed_supp_mask] = betas_on_supp_tmp
     
     def get_sparse_sol_via_brute_force(self, k):
-        """Get optimal sparse solution through brute force; only works for small p choose k
+        """Get sparse solution through brute force
 
-        Parameters
-        ----------
-        k : int
-            number of nonzero coefficients for the final sparse solution
+        Args:
+            k (int): cardinality of the final sparse solution
         """
 
         # enumerate all possible support sets
@@ -199,17 +248,12 @@ class sparseLogRegModel_big_n(linRegModel_unnormalized_big_n):
         self.betas[np.frombuffer(best_supp_str, dtype=bool)] = best_betas_on_supp
 
     def get_sparse_sol_via_OMP(self, k):
-        """Get sparse solution through beam search and orthogonal matching pursuit (OMP), for level i, each parent solution generates [child_size] child solutions, so there will be [parent_size] * [child_size] number of total child solutions. However, only the top [parent_size] child solutions are retained as parent solutions for the next level i+1.
+        """Get sparse solution through beam search and orthogonal matching pursuit (OMP), for level i, each parent solution generates [child_size] child solutions, so there will be [parent_size] * [child_size] number of total child solutions. However, only the top [parent_size] child solutions are retained as parent solutions for the next level i+1_summary_
 
-        Parameters
-        ----------
-        k : int
-            number of nonzero coefficients for the final sparse solution
-        parent_size : int, optional
-            how many top solutions to retain at each level, by default 10
-        child_size : int, optional
-            how many child solutions to generate based on each parent solution, by default 10
+        Args:
+            k (int): cardinality of the final sparse solution
         """
+
         nonzero_indices_set = set(np.where(np.abs(self.betas) > 1e-9)[0])
         num_nonzero = len(nonzero_indices_set)
         zero_indices_set = set(np.where(self.allowed_supp_mask)[0]) - nonzero_indices_set
@@ -236,13 +280,6 @@ class sparseLogRegModel_big_n(linRegModel_unnormalized_big_n):
    
     def beamSearch_multipleSupports_via_OMP_by_1(self):
         """Each parent solution generates [child_size] child solutions, so there will be [parent_size] * [child_size] number of total child solutions. However, only the top [parent_size] child solutions are retained as parent solutions for the next level i+1.
-
-        Parameters
-        ----------
-        parent_size : int, optional
-            how many top solutions to retain at each level, by default 10
-        child_size : int, optional
-            how many child solutions to generate based on each parent solution, by default 10
         """
         self.loss_arr_child.fill(1e32)
         self.total_child_added = 0
@@ -261,14 +298,10 @@ class sparseLogRegModel_big_n(linRegModel_unnormalized_big_n):
         self.num_parent = num_child_indices
 
     def expand_parent_i_support_via_OMP_by_1(self, i):
-        """For parent solution i, generate [child_size] child solutions
+        """For parent solution i, generate [child_size] child solutions_summary_
 
-        Parameters
-        ----------
-        i : int
-            index of the parent solution
-        child_size : int, optional
-            how many child solutions to generate based on parent solution i, by default 10
+        Args:
+            i (int): index of the parent solution
         """
         fixed_supp_mask = self.supp_mask_arr_parent[i]
         unfixed_and_allowed_mask = np.logical_xor(self.allowed_supp_mask, fixed_supp_mask)

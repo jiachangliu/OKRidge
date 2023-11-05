@@ -14,44 +14,19 @@ gc.enable()
 
 
 def get_RAM_used_in_GB():
-    # print(psutil.virtual_memory())
-    # print(psutil.virtual_memory()[0])
     return psutil.virtual_memory()[3] / 1000000000
 
 
 class Node:
     def __init__(self, parent, zlb, zub, **kwargs):
+        """Initialize a node in the branch and bound tree.
+
+        Args:
+            parent (CustomClass): parent node
+            zlb (np.array): 1D array indicating lower bound of each binary variable
+            zub (np.array): 1D array indicating upper bound of each binary variable
         """
-        Initialize a Node
-        Parameters
-        ----------
-        parent: Node or None
-            the parent Node
-        zlb: np.array
-            p x 1 array representing the lower bound of the integer variables z
-        zub: np.array
-            p x 1 array representing the upper bound of the integer variables z
-        Other Parameters
-        ----------------
-        x: np.array
-            The data matrix (n x p). If not specified the data will be
-            inherited from the parent node
-        y: np.array
-            The data vector (n x 1). If not specified the data will be
-            inherited from the parent node
-        xi_xi: np.array
-            The norm of each column in x (p x 1). If not specified the data
-            will be inherited from the parent node
-        l0: float
-            The zeroth norm coefficient. If not specified the data will
-            be inherited from the parent node
-        l2: float
-            The second norm coefficient. If not specified the data will
-            be inherited from the parent node
-        m: float
-            The bound for the features (\beta). If not specified the data will
-            be inherited from the parent node
-        """
+
         self.data = kwargs.get("data", parent.data if parent else None)
         self.inherit_parent_upper_sol = kwargs.get("inherit_parent_upper_sol", False)
         self.inherit_parent_lower_sol = kwargs.get("inherit_parent_lower_sol", False)
@@ -59,14 +34,6 @@ class Node:
             self.parent_lower_bound = parent.lower_bound
         else:
             self.parent_lower_bound = 0
-        # self.parent_primal = parent.primal_value if parent else None
-
-        # self.r = deepcopy(parent.r) if parent else None
-        # if parent:
-        #     self.warm_start = \
-        #         {i: j for i, j in zip(parent.support, parent.primal_beta)}
-        # else:
-        #     self.warm_start = None
 
         self.level = parent.level + 1 if parent else 0
 
@@ -109,6 +76,8 @@ class Node:
         self.lower_solve_used_brute_force = False
 
     def delete_storedData_on_allowed_support(self):
+        """Delete the stored data on the allowed support to save memory
+        """
         RAM_used = get_RAM_used_in_GB()
         # print("before deleting, RAM_used is", RAM_used)
         del self.allowed_support_2d_indices
@@ -122,6 +91,8 @@ class Node:
         # print("after deleting, RAM_used is", RAM_used)
 
     def store_data_on_allowed_support(self):
+        """Store the data on the allowed support to save future computation
+        """
         # self.XTX_minus_smallest_eigenval_on_allowed_support = self.data.XTX_minus_smallest_eigenval[self.allowed_support][:, self.allowed_support]
         self.allowed_support_2d_indices = np.ix_(
             self.allowed_support, self.allowed_support
@@ -141,6 +112,17 @@ class Node:
         self.data_isStored_on_allowed_support = True
 
     def upper_solve(self, k, upper_solver, parent_size=50, child_size=50):
+        """Solve the k-sparse ridge regression for the current node using heuristic method
+
+        Args:
+            k (int): cardinality constraint
+            upper_solver (CustomClass): solver that can search for the k-sparse solution
+            parent_size (int, optional): parent size of the beam search procedure. Defaults to 50.
+            child_size (int, optional): child size of the beam search procedure. Defaults to 50.
+
+        Returns:
+            float: loss of the k-sparse solution
+        """
         if self.data_isStored_on_allowed_support is False:
             self.store_data_on_allowed_support()
 
@@ -186,6 +168,15 @@ class Node:
         return self.upper_bound
 
     def upper_solve_with_cache(self, k, upper_solver):
+        """Solve the k-sparse ridge regression for the current node using heuristic method
+
+        Args:
+            k (int): cardinality constraint
+            upper_solver (CustomClass): solver that can search for the k-sparse solution
+
+        Returns:
+            float: loss of the k-sparse solution
+        """
         if self.lower_solve_used_brute_force:
             return self.upper_bound
 
@@ -226,6 +217,15 @@ class Node:
         return self.upper_bound
 
     def lower_solve_brute_force(self, k, upper_solver):
+        """Find the lower bound of the current node using brute force method
+
+        Args:
+            k (int): cardinality constraint
+            upper_solver (CustomClass): solver that can find the best k-sparse solution via brute force
+
+        Returns:
+            float: loss of the best k-sparse solution
+        """
         if self.data_isStored_on_allowed_support is False:
             self.store_data_on_allowed_support()
 
@@ -248,6 +248,15 @@ class Node:
         return self.lower_bound
 
     def lower_solve(self, k, upper_bound):
+        """Solve the perspective relaxation of the current node through the Fast Solve method
+
+        Args:
+            k (int): cardinality constraint
+            upper_bound (float): loss of the best k-sparse solution found so far
+
+        Returns:
+            float: a valid lower bound of the current node
+        """
         if self.data_isStored_on_allowed_support is False:
             self.store_data_on_allowed_support()
 
@@ -280,6 +289,15 @@ class Node:
         return self.lower_bound
 
     def calculate_lower_bound(self, lower_beta_on_allowed_support, k):
+        """Calculate the lower bound of the current node for the saddle point formulation
+
+        Args:
+            lower_beta_on_allowed_support (np.array): 1D array of coefficients for the saddle point formulation
+            k (int): cardinality constraint
+
+        Returns:
+            float: a valid lower bound of the current node
+        """
 
         lower_p_on_allowed_support = (
             2
@@ -317,8 +335,15 @@ class Node:
         return lower_bound
 
     def finetune_ADMM_rho(self, k, upper_bound, factor=10):
-        print("start finetuning ADMM rho")
-        print("at the beginning, rho is", self.data.rho_ADMM)
+        """Finetune the step size of ADMM via two-way grid search
+
+        Args:
+            k (int): cardinality constraint
+            upper_bound (float): loss of the best k-sparse solution found so far
+            factor (int, optional): multiplicative factor when we perform grid search on the best step size. Defaults to 10.
+        """
+        # print("start finetuning ADMM rho")
+        # print("at the beginning, rho is", self.data.rho_ADMM)
         original_rho = self.data.rho_ADMM
 
         _ = self.lower_solve(k, upper_bound)
@@ -346,14 +371,23 @@ class Node:
             else:
                 break
         self.data.rho_ADMM = original_rho * total_factor
-        print("at the end, rho is", self.data.rho_ADMM)
+        # print("at the end, rho is", self.data.rho_ADMM)
 
     def lower_solve_admm(self, k, upper_bound):
+        """Solve the perspective relaxation of the current node through the ADMM method
+
+        Args:
+            k (int): cardinality constraint
+            upper_bound (float): loss of the best k-sparse solution found so far
+
+        Returns:
+            float: a valid lower bound of the current node
+        """
         if self.data_isStored_on_allowed_support is False:
             self.store_data_on_allowed_support()
 
-        print("upper_bound is", upper_bound)
-        print("initial lower bound is", self.lower_bound)
+        # print("upper_bound is", upper_bound)
+        # print("initial lower bound is", self.lower_bound)
 
         lower_beta_on_allowed_support_k = self.lower_beta_on_allowed_support.copy()
         lower_p_on_allowed_support_k = (
@@ -365,11 +399,7 @@ class Node:
         lower_q_on_allowed_support_k = np.zeros((len(lower_beta_on_allowed_support_k),))
 
         rho = self.data.rho_ADMM
-        # rho = 0.001
-        # rho = 0.032267
-        # rho = 0.009844818945193998
-        print("rho inside ADMM is", rho)
-        # rho = 0.0042578934357783045
+        # print("rho inside ADMM is", rho)
 
         # step_1_Q = 2 / rho * np.eye(len(lower_beta_on_allowed_support_k)) + self.XTX_minus_smallest_eigenval_on_allowed_support
         step_1_Q = self.XTX_minus_smallest_eigenval_on_allowed_support.copy()
@@ -383,7 +413,7 @@ class Node:
         isotonic_clf = IsotonicRegression()
 
         k_minus_fixed = k - len(self.fixed_support_on_allowed_support)
-        print("k_minus_fixed is", k_minus_fixed)
+        # print("k_minus_fixed is", k_minus_fixed)
 
         lower_beta_Q_on_allowed_support_k = np.zeros(
             (len(lower_beta_on_allowed_support_k),)
@@ -458,20 +488,29 @@ class Node:
             # print("loss becomes", tmp_loss)
 
             tmp_loss = self.calculate_lower_bound(lower_beta_on_allowed_support_k, k)
-            print("loss becomes", tmp_loss)
+            # print("loss becomes", tmp_loss)
 
         tmp_lower_bound = self.calculate_lower_bound(lower_beta_on_allowed_support_k, k)
-        print("after ADMM, lower bound is {}".format(tmp_lower_bound))
+        # print("after ADMM, lower bound is {}".format(tmp_lower_bound))
 
         if tmp_lower_bound > self.lower_bound:
             self.lower_bound = tmp_lower_bound
             self.lower_beta_on_allowed_support = lower_beta_on_allowed_support_k.copy()
-        print("we are using {} as the final lower bound".format(self.lower_bound))
-        print()
+        # print("we are using {} as the final lower bound".format(self.lower_bound))
+        # print()
 
         return self.lower_bound
 
     def lower_solve_improve(self, k, upper_bound):
+        """Improve the lower bound of the current node using subgradient ascent
+
+        Args:
+            k (int): cardinality constraint
+            upper_bound (float): loss of the best k-sparse solution found so far
+
+        Returns:
+            float: a valid lower bound of the current node
+        """
         if self.data_isStored_on_allowed_support is False:
             self.store_data_on_allowed_support()
 
@@ -589,11 +628,18 @@ class Node:
         # print(" after improving, lower bound is ", self.lower_bound)
         # print("the best lower bound we get is", min_loss)
         # print("time elapsed is", time.time() - st)
-        # sys.exit()
 
         return self.lower_bound
 
     def lower_solve_simpler(self, k):
+        """Solve the perspective relaxation of the current node through the Fast Solve method
+
+        Args:
+            k (int): cardinality constraint
+
+        Returns:
+            float: a valid lower bound of the current node
+        """
         if self.data_isStored_on_allowed_support is False:
             self.store_data_on_allowed_support()
 
@@ -643,36 +689,17 @@ class Node:
 
         return self.lower_bound
 
-    def __str__(self):
-        return (
-            f"level: {self.level}, lower cost: {self.primal_value}, "
-            f"upper cost: {self.upper_bound}"
-        )
-
-    def __repr__(self):
-        return self.__str__()
-
-    def __lt__(self, other):
-        if self.level == other.level:
-            if self.primal_value is None and other.primal_value:
-                return True
-            if other.primal_value is None and self.primal_value:
-                return False
-            elif not self.primal_value and not other.primal_value:
-                return self.parent_primal > other.parent_cost
-            return self.primal_value > other.lower_bound_value
-        return self.level < other.level
-
-    def __lt__(self, other):
-        if self.parent_lower_bound - other.parent_lower_bound < -1e-4:
-            return True
-        elif self.parent_lower_bound - other.parent_lower_bound > 1e-4:
-            return False
-        else:
-            return self.level < other.level
-
-
 def new_z(node, index):
+    """Create two new z vectors by branching on the index-th variable
+
+    Args:
+        node (CustomClass): parent node
+        index (int): index of the variable to branch on
+
+    Returns:
+        np.array: 1D array of left z vector
+        np.array: 1D array of right z vector
+    """
     new_zlb = node.zlb.copy()
     new_zub = node.zub.copy()
     new_zlb[index] = 1
@@ -681,6 +708,16 @@ def new_z(node, index):
 
 
 def branch(current_node, k):
+    """Branch on the current node
+
+    Args:
+        current_node (CustomClass): parent node
+        k (int): cardinality constraint
+
+    Returns:
+        CustomClass: left child node
+        CustomClass: right child node
+    """
     unfixed_and_allowed_support = current_node.allowed_support[
         current_node.unfixed_support_on_allowed_support
     ]
