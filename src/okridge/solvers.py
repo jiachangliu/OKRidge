@@ -185,7 +185,7 @@ class sparseLogRegModel_big_n(linRegModel_unnormalized_big_n):
         
         self.saved_solution = {}
         supp_mask_all_False = np.zeros((self.p, ), dtype=bool)
-        tmp_support_str = supp_mask_all_False.tostring()
+        tmp_support_str = supp_mask_all_False.tobytes()
         self.saved_solution[tmp_support_str] = (None, self.r, 0.0)
 
         self.max_memory_GB = max_memory_GB
@@ -205,7 +205,7 @@ class sparseLogRegModel_big_n(linRegModel_unnormalized_big_n):
         self.fixed_supp_mask = fixed_supp_mask
         self.allowed_supp_mask = allowed_supp_mask
         self.betas.fill(0)
-        tmp_support_str = fixed_supp_mask.tostring()
+        tmp_support_str = fixed_supp_mask.tobytes()
         if tmp_support_str in self.saved_solution:
             betas_on_supp_tmp, self.r, self.loss = self.saved_solution[tmp_support_str]
         else:
@@ -221,7 +221,7 @@ class sparseLogRegModel_big_n(linRegModel_unnormalized_big_n):
 
         # enumerate all possible support sets
         best_loss = self.loss
-        best_supp_str = self.fixed_supp_mask.tostring()
+        best_supp_str = self.fixed_supp_mask.tobytes()
 
         total_num_combinations = scipy.special.comb(sum(self.allowed_supp_mask) - sum(self.fixed_supp_mask), k - sum(self.fixed_supp_mask), exact=True)
         total_supp_mask = np.zeros((total_num_combinations, self.p), dtype=bool)
@@ -231,7 +231,7 @@ class sparseLogRegModel_big_n(linRegModel_unnormalized_big_n):
 
         for i, additional_fixed_supp_mask in enumerate(additional_fixed_supp_masks):
             total_supp_mask[i, list(additional_fixed_supp_mask)] = True
-            tmp_support_str = total_supp_mask[i].tostring()
+            tmp_support_str = total_supp_mask[i].tobytes()
             if tmp_support_str in self.saved_solution:
                 betas_on_supp_tmp, r_on_supp_tmp, loss_tmp = self.saved_solution[tmp_support_str]
             else:
@@ -308,7 +308,7 @@ class sparseLogRegModel_big_n(linRegModel_unnormalized_big_n):
         unfixed_and_allowed_indicies = np.where(unfixed_and_allowed_mask)[0]
 
 
-        tmp_support_str = self.supp_mask_arr_parent[i].tostring()
+        tmp_support_str = self.supp_mask_arr_parent[i].tobytes()
         if tmp_support_str in self.saved_solution:
             _, r_parent_i, _ = self.saved_solution[tmp_support_str]
         else:
@@ -327,7 +327,7 @@ class sparseLogRegModel_big_n(linRegModel_unnormalized_big_n):
         for l in range(num_new_js):
             child_id = child_start + l
             self.supp_mask_arr_child[child_id, new_js[l]] = True
-            tmp_support_str = self.supp_mask_arr_child[child_id].tostring()
+            tmp_support_str = self.supp_mask_arr_child[child_id].tobytes()
             if tmp_support_str not in self.forbidden_support:
                 self.total_child_added += 1
                 self.forbidden_support.add(tmp_support_str)

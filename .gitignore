@@ -1,3 +1,5 @@
+tests/Synthetic_n=6000_p=3000_k=10_rho=0.5_snr=5.0_seed=0.npy
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

@@ -1,5 +1,3 @@
-from okridge import okridge
-
 import os
 
 os.environ["OMP_NUM_THREADS"] = "1"  # export OMP_NUM_THREADS=4
@@ -15,39 +13,20 @@ import time
 import sys
 
 from okridge.tree import BNBTree
+from okridge.utils import download_file_from_google_drive
+from pathlib import Path
 
-import cProfile, pstats
-
-
-def dataset(n, p, k):
-    X = np.random.uniform(-1.0, 1.0, (n, p))
-    w = np.zeros(p)
-    nonzero_indices = np.random.choice(p, k, replace=False)
-    print(sorted(nonzero_indices))
-    w[nonzero_indices] = 1.0
-    w[nonzero_indices[0]] = 28.0
-    w[nonzero_indices[-1]] = -20.0
-    y = X.dot(w) + np.random.normal(0.0, 0.2, n)
-    return X, y
-
-
-def main():
+def test_BNBTree():
 
     k = 10
-    loaded_data = np.load(
-        "/usr/xtmp/jl888/BeamSearchRegression/tests/data011723/dataMethod=genSynthetic4_n=10000_p=3000_k=10_rho=0.9_snr=5.0_seed=0.npy",
-        allow_pickle=True,
-    )
+    data_file_path = "./tests/Synthetic_n=6000_p=3000_k=10_rho=0.5_snr=5.0_seed=0.npy"
+
+    if not os.path.isfile(data_file_path):
+        download_file_from_google_drive('1lizlnufRBmEzMNpr0OlgE-P7otC8opkX', data_file_path)
+
+    loaded_data = np.load(data_file_path, allow_pickle=True)
     X, y = loaded_data.item().get("X"), loaded_data.item().get("y")
 
-    # loaded_data = np.load("/usr/xtmp/jl888/BeamSearchRegression/tests/data011723/dataMethod=genSynthetic4_n=4000_p=3000_k=10_rho=0.1_snr=5.0_seed=0.npy", allow_pickle=True)
-    # X, y = loaded_data.item().get('X'), loaded_data.item().get('y')
-
-    # data = {'X': X, 'y': y, 'beta': b}
-    # np.save("/usr/xtmp/jl888/BeamSearchRegression/tests/dataPathological/dataMethod=genSynthetic4_n=3000_p=3000_k=10_rho=0.01_snr=10.0_seed=0.npy", data)
-    # X, y = loaded_data.item().get('X'), loaded_data.item().get('y')
-
-    # lambda2 = 1e-3
     lambda2 = 1e1
 
     # # ours method
@@ -73,7 +52,11 @@ def main():
     )
     print(np.nonzero(betas))
     print("ours method is finished!")
-    print("time used including set up and extra printing is", time.time() - start_t)
+
+    indices_support = np.nonzero(betas)[0]
+    true_indices_support = np.asarray([0, 300, 600, 900, 1200, 1500, 1800, 2100, 2400, 2700], dtype=np.int64)
+
+    assert np.all(indices_support == true_indices_support)
 
 if __name__ == "__main__":
-    main()
+    test_BNBTree()
