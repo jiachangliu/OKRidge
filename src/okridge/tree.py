@@ -285,12 +285,6 @@ class BNBTree:
 
             # arrived at a solution?
             if best_gap <= gap_tol:
-                # print("reaching gap_tol mid way!")
-                # print(
-                #     "there are {} nodes left".format(
-                #         self.bfs_queue.qsize() + self.dfs_queue.qsize()
-                #     )
-                # )
                 return (
                     upper_bound,
                     upper_beta,
@@ -327,34 +321,6 @@ class BNBTree:
                 pass
 
             curr_node.delete_storedData_on_allowed_support()
-            # del curr_node
-
-            # print("total size of saved_solution is", total_size(self.upper_solver_with_cache.saved_solution))
-        
-        # print("counting number of heuristic solutions")
-        # print("number of heuristic solutions is", len(self.upper_solver_with_cache.saved_solution))
-        # losses = []
-        # sub_betas = []
-        # indices_strs = []
-        # yTy = self.data.y.dot(self.data.y)
-
-        # for indices_str in self.upper_solver_with_cache.saved_solution.keys():
-        #     sub_beta, _, loss = self.upper_solver_with_cache.saved_solution[indices_str]
-        #     losses.append(loss + yTy)
-        #     sub_betas.append(sub_beta)
-        #     indices_strs.append(indices_str)
-        
-        # loss_indices = np.argsort(losses)
-        # print("smallest 10 losses are", np.sort(losses)[:30])
-
-        # beta_collections = np.zeros((1000, self.data.p))
-        # loss_collections = []
-        # for i in range(1000):
-        #     loss_collections.append(losses[loss_indices[i]])
-        #     nonzero_indices = np.fromstring(indices_strs[loss_indices[i]], dtype=bool).nonzero()[0].astype(int)
-        #     print("nonzero_indices are", nonzero_indices)
-        #     print("sub_beta is", sub_betas[loss_indices[i]])
-        #     beta_collections[i, nonzero_indices] = sub_betas[loss_indices[i]]
 
         if not (self.bfs_queue.qsize() > 0 or self.dfs_queue.qsize() > 0):
             # print("There are no nodes left in the queue")
@@ -401,7 +367,7 @@ class BNBTree:
             )
             # print("lower bound by brute force method is", curr_dual)
         else:
-            curr_dual = curr_node.lower_solve(k, upper_bound)
+            curr_dual = curr_node.lower_solve_fast(k, upper_bound)
             # print("lower bound by fast method is", curr_dual)
 
             if tighten_bound_via_ADMM and (curr_dual < upper_bound):
@@ -424,9 +390,6 @@ class BNBTree:
         st = time.time()
         upper_beta = np.zeros((self.data.p,))
         upper_bound = self.data.XTX_lambda2.dot(upper_beta).dot(upper_beta)
-
-        if verbose:
-            print(f"initializing took {time.time() - st} seconds")
 
         st = time.time()
         # root node
