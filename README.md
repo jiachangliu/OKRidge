@@ -48,7 +48,7 @@ $ pip install okridge
 
 # Usage
 
-Please see the [example.ipynb](https://github.com/jiachangliu/OKRidge/blob/main/docs/example.ipynb) jupyter notebook on GitHub for a detailed tutorial on how to use OKRidge in a python environment.
+Please see the [example.ipynb](https://github.com/jiachangliu/OKRidge/blob/main/docs/example.ipynb) jupyter notebook on GitHub or [Example Usage](https://okridge.readthedocs.io/en/latest/example.html) on Read the Docs for a detailed tutorial on how to use OKRidge in a python environment. The detailed descriptions of key functions can be found in the [API Reference](https://okridge.readthedocs.io/en/latest/autoapi/index.html) on Read the Docs.
 
 ```python
 k = 10 # cardinality constraint
