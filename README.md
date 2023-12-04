@@ -33,6 +33,8 @@ $ pip install okridge
 
 # Usage
 
+Please see the [example.ipynb](https://github.com/jiachangliu/OKRidge/blob/main/docs/example.ipynb) jupyter notebook on GitHub for a detailed tutorial on how to use OKRidge in a python environment.
+
 ```python
 k = 10 # cardinality constraint
 lambda2 = 0.1 # l2 regularization parameter
