@@ -19,10 +19,11 @@ $$\min_{\mathbf{\beta}} \sum_{i=1}^n (y_i - \mathbf{x}_i^T \mathbf{\beta})^2 + \
 
 Optimal k-sparse ridge regression is a crucial ML problem that has many applications in statistics, machine learning, and data mining.
 However, the problem is NP-hard, and existing algorithms are either slow (using commercial MIP solvers) or suboptimal (using convex or nonconvex regularizers to approximate $\ell_0$).
-We propose a novel algorithm, OKRidge, that is both fast and optimal.
+We propose a novel algorithm, OKRidge, that can solve the problem to provable optimality in a scalable manner.
 
 OKRidge is based on the [branch-and-bound](https://en.wikipedia.org/wiki/Branch_and_bound) framework.
-The insight leading to the computational efficiency comes from a novel lower bound calculation involving, first, a saddle point formulation, and from there, either solving (i) a linear system or (ii) using an [ADMM](https://stanford.edu/~boyd/admm.html)-based approach, where the proximal operators can be efficiently evaluated by solving another linear system and an [isotonic regression](https://en.wikipedia.org/wiki/Isotonic_regression#:~:text=In%20statistics%20and%20numerical%20analysis,to%20the%20observations%20as%20possible.) problem. We also propose a method to warm-start our solver, which leverages a beam search.
+The insight leading to the computational efficiency comes from a novel lower bound calculation involving, first, a saddle point formulation, and from there, either solving (i) a linear system or (ii) using an [ADMM](https://stanford.edu/~boyd/admm.html)-based approach, where the proximal operators can be efficiently evaluated by solving another linear system and an [isotonic regression](https://en.wikipedia.org/wiki/Isotonic_regression#:~:text=In%20statistics%20and%20numerical%20analysis,to%20the%20observations%20as%20possible.) problem.
+We also propose a method to warm-start our solver, which leverages a beam search.
 
 Experimentally, our methods attain provable optimality with run times that are orders of magnitude faster than those of the existing MIP formulations solved by the commercial solver Gurobi.
 
