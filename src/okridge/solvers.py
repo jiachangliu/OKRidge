@@ -247,7 +247,7 @@ class sparseLogRegModel_big_n(linRegModel_unnormalized_big_n):
         self.betas[np.frombuffer(best_supp_str, dtype=bool)] = best_betas_on_supp
 
     def get_sparse_sol_via_OMP(self, k):
-        """Get sparse solution through beam search and orthogonal matching pursuit (OMP), for level i, each parent solution generates [child_size] child solutions, so there will be [parent_size] * [child_size] number of total child solutions. However, only the top [parent_size] child solutions are retained as parent solutions for the next level i+1_summary_
+        """Get sparse solution through beam search and orthogonal matching pursuit (OMP), for level i, each parent solution generates [child_size] child solutions, so there will be [parent_size] * [child_size] number of total child solutions. However, only the top [parent_size] child solutions are retained as parent solutions for the next level i+1
 
         Args:
             k (int): cardinality of the final sparse solution
@@ -297,7 +297,7 @@ class sparseLogRegModel_big_n(linRegModel_unnormalized_big_n):
         self.num_parent = num_child_indices
 
     def expand_parent_i_support_via_OMP_by_1(self, i):
-        """For parent solution i, generate [child_size] child solutions_summary_
+        """For parent solution i, generate [child_size] child solutions
 
         Args:
             i (int): index of the parent solution

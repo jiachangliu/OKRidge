@@ -163,9 +163,9 @@ class BNBTree:
         Returns:
             float: cost or loss of the best solution found
             np.array: best solution found
-            float: running time of branch and bound
-            float: best lower bound found
             float: best gap found
+            float: best lower bound found
+            float: running time of branch and bound
         """
 
         st = time.time()
