@@ -48,7 +48,7 @@ class DataClass:
 
         eigenvalues = np.linalg.eigvalsh(self.XTX)
         self.smallest_eigenval = np.linalg.eigvalsh(self.XTX)[0] * 0.999
-        print("we take lambda to be", self.smallest_eigenval)
+        # print("we take lambda to be", self.smallest_eigenval)
 
         self.rho_ADMM = 2 / np.sqrt(
             (eigenvalues[1] - self.smallest_eigenval)
@@ -172,8 +172,8 @@ class BNBTree:
         upper_beta = np.zeros((self.data.p,))
         upper_bound = self.data.XTX_lambda2.dot(upper_beta).dot(upper_beta)
 
-        if verbose:
-            print(f"initializing took {time.time() - st} seconds")
+        # if verbose:
+            # print(f"initializing took {time.time() - st} seconds")
 
         st = time.time()
         # root node
@@ -192,7 +192,10 @@ class BNBTree:
         best_gap = gap_tol + 1
 
         if verbose:
-            print(f"{number_of_dfs_levels} levels of depth used")
+            if number_of_dfs_levels > 0:
+                print("using depth-first search for the first {} levels".format(number_of_dfs_levels))
+            else:
+                print("using breadth-first search")
 
         upper_bound = self.root.upper_solve_with_cache(k, self.upper_solver_with_cache)
         upper_beta = self.root.upper_beta.copy()
@@ -214,6 +217,15 @@ class BNBTree:
             self.root.finetune_ADMM_rho(k, upper_bound, factor=10)
 
         RAM_used_GB_since_start = self.get_RAM_used_since_start()
+
+        print(
+            f"'l' -> level(depth) of BnB tree, ",
+            f"'d' -> best dual bound, ",
+            f"'u' -> best upper(primal) bound, ",
+            f"'g' -> optimiality gap, ",
+            f"'t' -> time"
+        )
+
         # keep searching through the queue if the queue is not empty AND time limit is not reached
         while (
             (self.bfs_queue.qsize() > 0 or self.dfs_queue.qsize() > 0)
@@ -265,11 +277,11 @@ class BNBTree:
 
             # update gap?
             if self.levels[min_open_level] == 0:
-                print(
-                    "there are {} nodes left in the bfs queue".format(
-                        self.bfs_queue.qsize()
-                    )
-                )
+                # print(
+                #     "there are {} nodes left in the bfs queue".format(
+                #         self.bfs_queue.qsize()
+                #     )
+                # )
                 del self.levels[min_open_level]
                 max_lower_bound_value = max(
                     [j for i, j in dual_bound.items() if i <= min_open_level]
@@ -277,9 +289,14 @@ class BNBTree:
                 best_gap = (upper_bound - max_lower_bound_value) / abs(upper_bound)
                 if verbose:
                     print(
-                        f"l: {min_open_level}, (d: {max_lower_bound_value}, "
-                        f"u: {upper_bound}, g: {best_gap}, "
-                        f"t: {time.time() - st} s"
+                        # f"l: {min_open_level}, d: {max_lower_bound_value}, "
+                        # f"u: {upper_bound}, g: {best_gap}, "
+                        # f"t: {time.time() - st} s"
+                        "l: {}, ".format(min_open_level).ljust(8),
+                        "d: {:.10f}, ".format(max_lower_bound_value).ljust(25),
+                        "u: {:.10f}, ".format(upper_bound).ljust(25),
+                        "g: {:.10f}, ".format(best_gap).ljust(15),
+                        "t: {:.5f} s".format(time.time() - st).ljust(12)
                     )
                 min_open_level += 1
 

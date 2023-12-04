@@ -191,9 +191,8 @@ class sparseLogRegModel_big_n(linRegModel_unnormalized_big_n):
         self.max_memory_GB = max_memory_GB
         tmp_vec_bytes = sys.getsizeof(np.zeros((self.p, )))
         self.max_saved_solutions = int(convert_GB_to_bytes(self.max_memory_GB) / tmp_vec_bytes)
-        # self.max_saved_solutions = 10
 
-        print("max number of saved solutions is", self.max_saved_solutions)
+        # print("max number of saved solutions is", self.max_saved_solutions)
 
     def reset_fixed_supp_and_allowed_supp(self, fixed_supp_mask, allowed_supp_mask):
         """Reset the fixed support and allowed support
