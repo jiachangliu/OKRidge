@@ -145,17 +145,16 @@ class Node:
             self.data.XTX_lambda2[self.allowed_support][:, self.allowed_support],
             self.data.XTy[self.allowed_support],
         )
-        upper_solver.warm_start_from_beta0_betas(0, betas_warmstart)
+        upper_solver.warm_start_from_betas(betas_warmstart)
 
         upper_solver.get_sparse_sol_via_OMP(
             k=k, parent_size=parent_size, child_size=child_size
         )
 
         (
-            _,
             betas_on_allowed_support,
             r_on_allowed_support,
-        ) = upper_solver.get_beta0_betas_r()
+        ) = upper_solver.get_betas_r()
 
         self.upper_beta = np.zeros((self.data.p,))
         self.upper_beta[self.allowed_support] = betas_on_allowed_support
@@ -198,7 +197,7 @@ class Node:
 
         upper_solver.get_sparse_sol_via_OMP(k=k)
 
-        # _, betas_on_allowed_support, r_on_allowed_support = upper_solver.get_beta0_betas_r()
+        # betas_on_allowed_support, r_on_allowed_support = upper_solver.get_betas_r()
 
         # self.upper_beta = np.zeros((self.data.p, ))
         # self.upper_beta[self.allowed_support] = betas_on_allowed_support

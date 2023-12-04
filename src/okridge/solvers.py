@@ -67,12 +67,11 @@ def calculate_size(tmp_dict):
 
 
 class linRegModel_unnormalized_big_n:
-    def __init__(self, data, intercept=True):
+    def __init__(self, data):
         """Initialize the linear regression model
 
         Args:
             data (CustomClass): data containing all the necessary information
-            intercept (bool, optional): whether we include an intercept term. Defaults to True.
         """
         self.X = data.X
         self.n, self.p = data.n, data.p
@@ -80,47 +79,42 @@ class linRegModel_unnormalized_big_n:
         self.y = data.y.reshape(-1).astype(float)
         self.XTX_lambda2 = data.XTX_lambda2
         self.XTy = data.XTy
-        self.beta0 = 0.0
         self.betas = np.zeros((self.p, ))
 
         self.r = self.XTX_lambda2.dot(self.betas)
         self.loss = self.r.dot(self.betas) - 2 * self.XTy.dot(self.betas)
 
-        self.intercept = intercept
         self.lambda2 = data.lambda2
 
         self.half_Lipschitz = data.half_Lipschitz
         self.total_child_added = 0
     
-    def warm_start_from_beta0_betas(self, beta0, betas):
-        """Warm start the model from a given beta0 and betas
+    def warm_start_from_betas(self, betas):
+        """Warm start the model from a given betas
 
         Args:
-            beta0 (float): intercept term
             betas (np.array): 1D array of coefficients
         """
-        self.beta0, self.betas = beta0, betas
+        self.betas = betas
         self.r = self.XTX_lambda2.dot(self.betas)
         self.total_child_added = 0
 
-    def get_beta0_betas(self):
-        """Get the current beta0 and betas
+    def get_betas(self):
+        """Get the current betas
 
         Returns:
-            float: intercept term
             np.array: 1D array of coefficients
         """
-        return self.beta0, self.betas
+        return self.betas
 
-    def get_beta0_betas_r(self):
-        """Get the current beta0, betas, and r
+    def get_betas_r(self):
+        """Get the current betas, and r
 
         Returns:
-            float: intercept term
             np.array: 1D array of coefficients
             np.array: 1D array of intermediate values - XTX_lambda2.dot(betas)
         """
-        return self.beta0, self.betas, self.r
+        return self.betas, self.r
     
     def get_betas_r_loss(self):
         """Get the current betas, r, and loss
@@ -155,18 +149,17 @@ class linRegModel_unnormalized_big_n:
 
 
 class sparseLogRegModel_big_n(linRegModel_unnormalized_big_n):
-    def __init__(self, data, intercept=True, parent_size=10, child_size=10, allowed_supp_mask=None, max_memory_GB=50):
+    def __init__(self, data, parent_size=10, child_size=10, allowed_supp_mask=None, max_memory_GB=50):
         """Initialize the sparse logistic regression model
 
         Args:
             data (CustomClass): data containing all the necessary information
-            intercept (bool, optional): whether we include an intercept term. Defaults to True.
             parent_size (int, optional): number of solutions to keep after doing beam search so that these can be used as parent solutions for the next stage of support expansion. Defaults to 10.
             child_size (int, optional): number of solutions to explore for each parent solution during beam search. Defaults to 10.
             allowed_supp_mask (np.array, optional): 1D of boolean values indicating which features are allowed to use. Defaults to None.
             max_memory_GB (int, optional): maximum memory (in GB) to use. Defaults to 50.
         """
-        super().__init__(data=data, intercept=intercept)
+        super().__init__(data=data)
         
         self.parent_size = parent_size
         self.child_size = child_size

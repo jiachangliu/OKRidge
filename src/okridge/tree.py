@@ -133,7 +133,6 @@ class BNBTree:
 
         self.upper_solver_with_cache = sparseLogRegModel_big_n_with_cache(
             data=self.data,
-            intercept=False,
             parent_size=50,
             child_size=50,
             max_memory_GB=50,
