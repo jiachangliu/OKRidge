@@ -1,8 +1,20 @@
-# okridge <!-- omit in toc -->
+# OKRidge <!-- omit in toc -->
+
+[![docs](https://readthedocs.org/projects/okridge/badge/?version=latest)](https://readthedocs.org/projects/okridge/?badge=latest)
+[![pypi](https://img.shields.io/pypi/v/okridge?color=blue)](https://pypi.org/project/okridge/)
+[![license](https://img.shields.io/badge/License-BSD-brightgreen)](https://github.com/jiachangliu/OKRidge/blob/main/LICENSE)
+[![Downloads](https://pepy.tech/badge/okridge)](https://pepy.tech/project/okridge)
+[![downloads](https://img.shields.io/pypi/dm/okridge)](https://pypistats.org/packages/okridge)
+[![arxiv badge](https://img.shields.io/badge/arXiv-2304.06686-red)](https://arxiv.org/abs/2304.06686)
 
 This repository contains source code to our NeurIPS 2023 paper:
 
 [**OKRidge: Scalable Optimal k-Sparse Ridge Regression**](https://arxiv.org/abs/2304.06686)
+
+- Documentation: [https://okridge.readthedocs.io](https://okridge.readthedocs.io)
+- GitHub: [https://github.com/jiachangliu/OKRidge](https://github.com/jiachangliu/OKRidge)
+- PyPI: [https://pypi.org/project/okridge/](https://pypi.org/project/okridge/)
+- Free and open source software: [BSD license](https://github.com/jiachangliu/OKRidge/blob/main/LICENSE)
 
 # Table of Content <!-- omit in toc -->
 - [Introduction](#introduction)
