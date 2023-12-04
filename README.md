@@ -13,8 +13,7 @@ This repository contains source code to our NeurIPS 2023 paper:
 
 We consider the following optimization problem:
 
-$\min_{\beta} \sum_{i=1}^n (y_i - x_i^T \beta)^2 + \lambda_2 \| \beta \|_2^2$  
-s.t. $\quad$ $\|\beta\|_0 \leq k$.
+$$\min_{\beta} \sum_{i=1}^n (y_i - x_i^T \beta)^2 + \lambda_2 \| \beta \|_2^2 \quad \text{s.t.} \quad \|\beta\|_0 \leq k$$
 
 Optimal k-sparse ridge regression is a crucial ML problem that has many applications in statistics, machine learning, and data mining.
 However, the problem is NP-hard, and existing algorithms are either slow (using commercial MIP solvers) or suboptimal (using convex or nonconvex regularizers to approximate $\ell_0$).
