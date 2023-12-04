@@ -8,6 +8,8 @@ This repository contains source code to our NeurIPS 2023 paper:
 - [Introduction](#introduction)
 - [Installation](#installation)
 - [Usage](#usage)
+- [Contributing](#contributing)
+- [License](#license)
 
 # Introduction
 
@@ -64,10 +66,10 @@ Interested in contributing? Check out the contributing guidelines. Please note t
 If you find our work useful in your research, please consider citing the following paper:
 
 ```BibTeX
-@article{liu2023okridge,
+@inproceedings{liu2023okridge,
   title={OKRidge: Scalable Optimal k-Sparse Ridge Regression},
   author={Liu, Jiachang and Rosen, Sam and Zhong, Chudi and Rudin, Cynthia},
-  booktitle={Proceedings of Neural Information Processing Systems},
+  booktitle={Thirty-seventh Conference on Neural Information Processing Systems},
   year={2023}
 }
 ```
