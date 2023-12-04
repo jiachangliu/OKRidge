@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "okridge"
-version = "0.1.0"
+version = "0.1.1"
 description = "A packge for solving k-sparse ridge regression certifiably!"
 authors = ["Jiachang Liu"]
 license = "BSD 3-Clause"
