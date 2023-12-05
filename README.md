@@ -51,11 +51,16 @@ $ pip install okridge
 Please see the [example.ipynb](https://github.com/jiachangliu/OKRidge/blob/main/docs/example.ipynb) jupyter notebook on GitHub or [Example Usage](https://okridge.readthedocs.io/en/latest/example.html) on Read the Docs for a detailed tutorial on how to use OKRidge in a python environment. The detailed descriptions of key functions can be found in the [API Reference](https://okridge.readthedocs.io/en/latest/autoapi/index.html) on Read the Docs.
 
 ```python
+from okridge.tree import BNBTree
+from sklearn.datasets import load_diabetes
+
 k = 10 # cardinality constraint
 lambda2 = 0.1 # l2 regularization parameter
 gap_tol = 1e-4 # optimality gap tolerance
 verbose = True # print out the progress
 time_limit = 180 # time limit in seconds
+
+X, y = load_diabetes(return_X_y = True)
 
 BnB_optimizer = BNBTree(X=X, y=y, lambda2=lambda2)
 
